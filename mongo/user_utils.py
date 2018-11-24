@@ -48,7 +48,7 @@ def user_post(mongo,data):
 	users = mongo.db.users
 	date = datetime.datetime.now()
 	data = json.loads(data)
-	print(data['uid'])
+	log.logger.info(data)
 	uid = data["uid"]
 	if users.find_one({"uid":uid}) == None:
 		data['createddate'] = date.strftime("%Y-%m-%d %H:%M:%S")
@@ -56,6 +56,8 @@ def user_post(mongo,data):
 		data['status'] = True
 		log.logger.info(data)
 		users.insert(data)
+		data.pop('_id')
+		data = json.dumps(data)
 		return jsonify({'result':data,'code':200})
 	else:
 		return jsonify({'result': '','code':403})
@@ -65,6 +67,7 @@ def user_put(mongo,data):
 	"""更新用户信息"""
 	log.logger.info("call : user_post(mongo,data)")
 	users = mongo.db.users
+	data = json.loads(data)
 	date = datetime.datetime.now()
 	uid = data["uid"]
 	res = users.find_one({"uid": uid})
