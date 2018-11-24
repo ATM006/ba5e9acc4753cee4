@@ -5,7 +5,7 @@
 import paho.mqtt.client as mqtt
 import json
 from conf import log
-
+from mongo import events_utils
 
 class MyMQTTClass(mqtt.Client):
 
@@ -17,6 +17,7 @@ class MyMQTTClass(mqtt.Client):
         log.logger.info("call : on_message(self, mqttc, obj, msg)")
         data = json.loads(msg.payload.decode("utf-8"))
         log.logger.info(data)
+		ret = events_utils.event_post(mongo,msg)
         target = data['details']['target']
         for item in target:
             print item

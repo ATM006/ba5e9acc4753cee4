@@ -9,7 +9,7 @@ ret = mqtt.run()
 
 """
 
-from mongo import user_utils
+from mongo import user_utils,events_utils
 from flask import Flask
 from flask_pymongo import PyMongo
 
@@ -29,12 +29,21 @@ data = '{\
 "username": "atmii"\
 }'
 
+msg = '{\
+"uid":123,\
+"target":["123","456"], \
+"time":"2018-05-09 18:44:37",\
+"msg":"hello word!"\
+}'
+
+
 
 @app.route('/')
 def hello_world():
     #ret = user_utils.user_post(mongo, data)
 	#ret = user_utils.user_put(mongo, data)
-	ret = user_utils.user_get(mongo, 663)
+	#ret = user_utils.user_get(mongo, 663)
+	ret = events_utils.event_post(mongo,msg)
 	return ret
 
 

@@ -4,18 +4,16 @@
 
 from flask import request,jsonify
 import json,uuid,datetime
+from conf import log
 
-exp = '{\
-"eventType":"",\
-"siteToken":"",\
-"eventDate":"",\
-"receivedDate":"",\
-"hardwareId":"",\
-"metadata":{},\
-"ext":{},\
-"eventbody":[]\
-}'
 
+"""
+{
+    "uid":"",
+    "target":["123","456"], 
+    "msg":{}
+}
+"""
 
 def event_get(mongo,hardwareId,etype):
 	devices = mongo.db.devices
@@ -57,51 +55,16 @@ def event_get(mongo,hardwareId,etype):
 
 
 
-def event_post(mongo,data,devId,etype):
-	devices = mongo.db.devices
+def event_post(mongo,data):
+	message = mongo.db.message
 	date = datetime.datetime.now()
-	ex = json.loads(exp)
-	hardwareId = data["hardwareId"]
-	if hardwareId != devId or data["eventType"] != etype:
-		return jsonify({'result': ex, 'code': 403})
-
-	if etype == 'DevicesData':
-		edata = mongo.db.eventsdata
-		if devices.find_one({"hardwareId": hardwareId}) == None:
-			return jsonify({'result': ex, 'code': 403})
-		else:
-			ex["eventType"] = data["eventType"]
-			ex["siteToken"] = data["siteToken"]
-			ex["eventDate"] = date.strftime("%Y-%m-%d %H:%M:%S")
-			ex["receivedDate"] = date.strftime("%Y-%m-%d %H:%M:%S")
-			ex["hardwareId"] = hardwareId
-			ex["metadata"] = data["metadata"]
-			ex["eventbody"] = data["eventbody"]
-			ex["ext"] = data["ext"]
-
-			print(ex)
-			edata.insert(ex)
-			ex.pop("_id")
-			return jsonify({'result': ex, 'code': 200})
+	data = json.loads(data)
+	log.logger.info(data)
+	uid = data['uid']
+	msg = data['msg']
+	log.logger.info(msg)
+	message.insert(data)
+	data.pop('_id')
+	return jsonify({'result': data, 'code': 200})
 
 
-	elif etype == 'UserCommands':
-		ecommands = mongo.db.commands
-		if devices.find_one({"hardwareId": hardwareId}) == None:
-			return jsonify({'result': ex, 'code': 403})
-		else:
-			ex["eventType"] = data["eventType"]
-			ex["siteToken"] = data["siteToken"]
-			ex["eventDate"] = date.strftime("%Y-%m-%d %H:%M:%S")
-			ex["receivedDate"] = date.strftime("%Y-%m-%d %H:%M:%S")
-			ex["hardwareId"] = hardwareId
-			ex["metadata"] = data["metadata"]
-			ex["eventbody"] = data["eventbody"]
-			ex["ext"] = data["ext"]
-
-			print(ex)
-			ecommands.insert(ex)
-			ex.pop("_id")
-			return jsonify({'result': ex, 'code': 200})
-	else:
-		return jsonify({'result': ex, 'code': 403})
