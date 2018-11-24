@@ -5,30 +5,29 @@ from flask import jsonify
 import json, datetime
 from conf import log
 
-exp = '{\
-"createdDate": "",\
-"createdBy": "",\
-"username": "",\
-"hashedPassword": "",\
-"lastLogin": "",\
-"status": "",\
-"ext":{},\
-"metadata": {}\
-}'
+"""
+{
+    "_id":"",        #系统生成
+    "uid":"",        #用户ID
+    "createddate": "2018-05-09 18:44:37",    #创建日期
+    "hashpassword": "1234561",        #密码hash，暂时名文
+    "lastLogin": "2018-05-09 18:44:37",        #最后登陆时间
+    "metadata": {},        #详细数据
+    "friendlist":["123","456"]
+    "status": true,        #登陆状态
+    "username": "atm"        #用户名
+}
+"""
 
-def te():
-	print ("13089u74\n")
 
-
-def user_get(mongo,name):
+def user_get(mongo,uid):
 	users = mongo.db.users
-	ex = json.loads(exp)
-	res = users.find_one({"username":name})
+	res = users.find_one({"uid": uid})
 	if res == None:
-		return jsonify({'result': ex,'code':404})
+		return jsonify({'result': '','code':404})
 	else:
 		res.pop("_id")
-		print(res)
+		log.logger.info(res)
 		return jsonify({'result':res,'code':200})
 
 
@@ -38,69 +37,55 @@ def user_get_all(mongo):
 	out = []
 	for item in u:
 		item.pop("_id")
-		print(item)
+		log.logger.info(item)
 		out.append(item)
-
 	return jsonify({'result':out,'code':200})
 
 
+
 def user_post(mongo,data):
+	"""创建用户信息"""
 	users = mongo.db.users
 	date = datetime.datetime.now()
-	ex = json.loads(exp)
-	name = data["username"]
-	if users.find_one({"username":name}) == None:
-		ex["createdDate"] = date.strftime("%Y-%m-%d %H:%M:%S")
-		ex["createdBy"] = "admin"
-		ex["username"] = data["username"]
-		ex["hashedPassword"] = data["hashedPassword"]
-		ex["lastLogin"] = date.strftime("%Y-%m-%d %H:%M:%S")
-		ex["status"] = True
-		ex["metadata"] = data["metadata"]
-		ex["ext"] = data["ext"]
-
-		print(ex)
-		users.insert(ex)
-		ex.pop("_id")
-		return jsonify({'result':ex,'code':200})
+	data = json.loads(data)
+	print(data['uid'])
+	uid = data["uid"]
+	if users.find_one({"uid":uid}) == None:
+		data['createddate'] = date.strftime("%Y-%m-%d %H:%M:%S")
+		data['lastLogin'] = date.strftime("%Y-%m-%d %H:%M:%S")
+		data['status'] = True
+		log.logger.info(data)
+		users.insert(data)
+		return jsonify({'result':data,'code':200})
 	else:
-		return jsonify({'result': ex,'code':403})
+		return jsonify({'result': '','code':403})
 
-#创建新用户
+
 def user_put(mongo,data):
+	"""更新用户信息"""
 	log.logger.info("call : user_post(mongo,data)")
 	users = mongo.db.users
 	date = datetime.datetime.now()
-	ex = json.loads(exp)
-	name = data["username"]
-	res = users.find_one({"username":name})
+	uid = data["uid"]
+	res = users.find_one({"uid": uid})
 	if res != None:
-		users.remove({"username":name})
-		res["createdDate"] = date.strftime("%Y-%m-%d %H:%M:%S")
-		res["createdBy"] = "admin"
-		res["username"] = data["username"]
-		res["hashedPassword"] = data["hashedPassword"]
-		res["lastLogin"] = date.strftime("%Y-%m-%d %H:%M:%S")
-		res["status"] = True
-		res["ext"] = data["ext"]
-		res["metadata"] = data["metadata"]
-		#print(res)
+		users.remove({"uid": uid})
+		res = data
 		log.logger.info(res)
 		users.insert(res)
 		res.pop("_id")
 		return jsonify({'result':res,'code':200})
 	else:
-		return jsonify({'result': ex,'code':403})
+		return jsonify({'result': '','code':403})
 
 
-def user_del(mongo,name):
+def user_del(mongo,uid):
 	users = mongo.db.users
-	ex = json.loads(exp)
-	res = users.find_one({"username":name})
+	res = users.find_one({"uid": uid})
 	if res == None:
-		return jsonify({'result': ex,'code':404})
+		return jsonify({'result': '','code':404})
 	else:
-		users.remove({"username":name})
+		users.remove({"uid": uid})
 		res.pop("_id")
-		print(res)
+		log.logger.info(res)
 		return jsonify({'result':res,'code':200})

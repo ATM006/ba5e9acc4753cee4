@@ -10,7 +10,6 @@ from conf import log
 class MyMQTTClass(mqtt.Client):
 
 
-
     def on_connect(self, mqttc, obj, flags, rc):
         print("rc: " + str(rc))
 
